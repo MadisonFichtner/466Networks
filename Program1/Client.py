@@ -17,6 +17,13 @@ b.create_empty_board(opp_board)
 b.print_board(opp_board)
 
 # Update own board to show X at location (5, 4)
+locationX = 5;
+locationY = 4;
 b.update_board(own_board, 5, 4)
 print("my updated board")
 b.print_board(own_board)
+
+
+#reading in a file to a 2d array
+with open("ownBoard.txt") as textFile:
+    lines = [line.split() for line in textFile]
