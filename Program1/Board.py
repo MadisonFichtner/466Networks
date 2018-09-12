@@ -12,5 +12,9 @@ def print_board(self):
 
 
 def update_board(self, x, y):
-    self[x][y] = "X"
-    return self
+    file = open("ownBoard.txt","r")
+    f1 = file.readlines()
+    #for x in f1:
+        #print(x)
+    #self[x][y] = "X"
+    #return self
