@@ -18,3 +18,6 @@ def update_board(self, x, y):
         #print(x)
     #self[x][y] = "X"
     #return self
+
+def read_board(self):
+    return 0

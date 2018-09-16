@@ -1,8 +1,14 @@
 import socket
 import Board as b
+import sys
+import http.client
+import urllib.parse
+import urllib as u
 
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.sendto('hello'.encode('utf-8'), ('127.0.0.1', 5000))
+ip = (sys.argv[1])  #ip address
+port = int(sys.argv[2]) #port address
+x = (sys.argv[3])    #x coordinate shot at
+y = (sys.argv[4])    #y coordinate shot at
 
 # initialize and print own board
 own_board = []
@@ -23,7 +29,38 @@ b.update_board(own_board, 5, 4)
 print("my updated board")
 b.print_board(own_board)
 
-
 #reading in a file to a 2d array
 with open("ownBoard.txt") as textFile:
     lines = [line.split() for line in textFile]
+
+def main():
+    client = http.client.HTTPConnection(ip, port)
+
+    coord = urllib.parse.urlencode({'?x=': x, '&y=': y})
+
+    headers = {"Content-type": "application/x-www-form-urlencoded",
+               "Accept": "text/plain"}
+    user = 'User-agent: Client.py'
+    contentLength = 'Content-Length: %s' %(len(coord))
+    param = urllib.parse.urlencode({'http://': ip, ':': port, 'len': contentLength, 'user': user})
+
+    client.request('POST', param, coord, headers)
+
+    response = client.getresponse()
+    print ("status : " , response.status, " reason: " , response.reason)
+
+
+main()
+
+
+
+
+
+
+
+
+
+
+
+
+
