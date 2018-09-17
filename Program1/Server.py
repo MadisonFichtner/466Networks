@@ -3,6 +3,7 @@ import sys
 import argparse
 import http.server as s
 import urllib as url
+import urllib
 import logging
 
 server = s.HTTPServer
@@ -20,6 +21,18 @@ class myHandler(handler):
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
         logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
                      str(self.path), str(self.headers), post_data.decode('utf-8'))
+        coordinates = post_data.decode('utf-8')
+
+        #---------obtaining coordinates from data sent over connection---------
+        coordinates = urllib.parse.unquote(post_data.decode('utf-8'))
+        andLocation = coordinates.find("&")
+        xHalf = coordinates[0:andLocation]
+        yHalf = coordinates[andLocation+1: len(coordinates)]
+        x = xHalf[xHalf.find("=")+1:len(xHalf)]
+        y = yHalf[yHalf.find("=")+1:len(yHalf)]
+
+        print("Recieved Coordinates x:", x, " y:", y)
+        #----------------------------------------------------------------------
 
         self._set_response()
         self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))

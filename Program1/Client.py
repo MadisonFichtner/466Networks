@@ -36,14 +36,12 @@ with open("ownBoard.txt") as textFile:
 def main():
     client = http.client.HTTPConnection(ip, port)
 
-    coord = urllib.parse.urlencode({'?x=': x, '&y=': y})
-
+    coord = urllib.parse.urlencode({'?x': x, '?y': y})
     headers = {"Content-type": "application/x-www-form-urlencoded",
                "Accept": "text/plain"}
     user = 'User-agent: Client.py'
     contentLength = 'Content-Length: %s' %(len(coord))
     param = urllib.parse.urlencode({'http://': ip, ':': port, 'len': contentLength, 'user': user})
-
     client.request('POST', param, coord, headers)
 
     response = client.getresponse()
@@ -51,16 +49,3 @@ def main():
 
 
 main()
-
-
-
-
-
-
-
-
-
-
-
-
-
