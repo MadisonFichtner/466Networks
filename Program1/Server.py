@@ -49,6 +49,8 @@ def run(server = s.HTTPServer, handler_class = myHandler):
     print("server is running...")
     httpd.serve_forever()
 
+run()
+
 '''
     data, addr = httpd.recv(1024)
     data1, addr = httpd.recv(1024)
@@ -63,9 +65,6 @@ def run(server = s.HTTPServer, handler_class = myHandler):
         pass
     httpd.server_close()
 '''
-
-run()
-
 
 
 '''

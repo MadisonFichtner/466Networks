@@ -12,7 +12,7 @@ def print_board(self):
 
 
 def update_board(self, x, y):
-    file = open("ownBoard.txt","r")
+    file = open("own_board.txt","r")
     f1 = file.readlines()
     #for x in f1:
         #print(x)

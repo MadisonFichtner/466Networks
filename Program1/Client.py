@@ -11,27 +11,38 @@ x = (sys.argv[3])    #x coordinate shot at
 y = (sys.argv[4])    #y coordinate shot at
 
 # initialize and print own board
-own_board = []
-print("my board")
-b.create_empty_board(own_board)
-b.print_board(own_board)
+#own_board = []
+#print("my board")
+#b.create_empty_board(own_board)
+#b.print_board(own_board)
 
 # initialize and print opponents board
-opp_board = []
-print("opponents board")
-b.create_empty_board(opp_board)
-b.print_board(opp_board)
+#opp_board = []
+#print("opponents board")
+#b.create_empty_board(opp_board)
+#b.print_board(opp_board)
 
 # Update own board to show X at location (5, 4)
-locationX = 5;
-locationY = 4;
-b.update_board(own_board, 5, 4)
-print("my updated board")
-b.print_board(own_board)
+#locationX = 5;
+#locationY = 4;
+#b.update_board(own_board, 5, 4)
+#print("my updated board")
+#b.print_board(own_board)
 
-#reading in a file to a 2d array
-with open("ownBoard.txt") as textFile:
+#------------------------reading in a file to a 2d array------------------------
+with open("own_board.txt") as textFile:
     lines = [line.split() for line in textFile]
+file = open("own_board.txt", "w")
+length = len(lines)
+for i in range(length):
+    for j in range(length):
+        #print(lines[i][j])
+        var = lines[i][j]
+        file.write(var)
+        file.write(" ")
+    file.write("\n")
+file.close()
+#-------------------------------------------------------------------------------
 
 def main():
     client = http.client.HTTPConnection(ip, port)
