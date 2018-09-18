@@ -47,16 +47,17 @@ file.close()
 def main():
     client = http.client.HTTPConnection(ip, port)
 
-    coord = urllib.parse.urlencode({'?x': x, '?y': y})
-    headers = {"Content-type": "application/x-www-form-urlencoded",
-               "Accept": "text/plain"}
+    coord = urllib.parse.urlencode({'x': x, 'y': y})
+    headers = {"Content-type": "application/x-www-form-urlencoded"}
     user = 'User-agent: Client.py'
     contentLength = 'Content-Length: %s' %(len(coord))
-    param = urllib.parse.urlencode({'http://': ip, ':': port, 'len': contentLength, 'user': user})
-    client.request('POST', param, coord, headers)
+    param = urllib.parse.urlencode({'ip': ip, 'port': port})
+
+    print("test print ", param, "coord", coord, headers)
+    client.request('POST', param, coord)
 
     response = client.getresponse()
-    print ("status : " , response.status, " reason: " , response.reason)
+    print ("status : ", response.status, " reason: ", response.reason)
 
 
 main()

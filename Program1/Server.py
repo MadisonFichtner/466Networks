@@ -1,10 +1,9 @@
-import socket
 import sys
 import argparse
 import http.server as s
 import urllib as url
 import urllib
-import logging
+
 
 server = s.HTTPServer
 handler = s.BaseHTTPRequestHandler
@@ -12,17 +11,15 @@ handler = s.BaseHTTPRequestHandler
 class myHandler(handler):
     # all of this is copy and pasted from https://gist.github.com/mdonkers/63e115cc0c79b4f6b8b3a6b797e485c7
     def _set_response(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_response(200, 'hit')
+        self.send_header('', '')
         self.end_headers()
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
-        logging.info("POST request,\nPath: %s\nHeaders:\n%s\n\nBody:\n%s\n",
-                     str(self.path), str(self.headers), post_data.decode('utf-8'))
-        coordinates = post_data.decode('utf-8')
 
+        print("message: ", post_data)
         #---------obtaining coordinates from data sent over connection---------
         coordinates = urllib.parse.unquote(post_data.decode('utf-8'))
         andLocation = coordinates.find("&")
@@ -35,7 +32,6 @@ class myHandler(handler):
         #----------------------------------------------------------------------
 
         self._set_response()
-        self.wfile.write("POST request for {}".format(self.path).encode('utf-8'))
 
 
 
