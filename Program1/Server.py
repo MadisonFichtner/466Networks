@@ -3,47 +3,70 @@ import argparse
 import http.server as s
 import urllib as url
 import urllib
-
+import Board as b
 
 server = s.HTTPServer
 handler = s.BaseHTTPRequestHandler
 
+
 class myHandler(handler):
     # all of this is copy and pasted from https://gist.github.com/mdonkers/63e115cc0c79b4f6b8b3a6b797e485c7
-    def _set_response(self):
-        self.send_response(200, 'hit')
+    def _set_response(self,n , message):
+        num = int(n)
+        self.send_response(num, message)
         self.send_header('', '')
         self.end_headers()
 
     def do_POST(self):
-        content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
-        post_data = self.rfile.read(content_length) # <--- Gets the data itself
+        content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
+        post_data = self.rfile.read(content_length)  # <--- Gets the data itself
 
         print("message: ", post_data)
-        #---------obtaining coordinates from data sent over connection---------
+        # ---------obtaining coordinates from data sent over connection---------
         coordinates = urllib.parse.unquote(post_data.decode('utf-8'))
         andLocation = coordinates.find("&")
         xHalf = coordinates[0:andLocation]
-        yHalf = coordinates[andLocation+1: len(coordinates)]
-        x = xHalf[xHalf.find("=")+1:len(xHalf)]
-        y = yHalf[yHalf.find("=")+1:len(yHalf)]
+        yHalf = coordinates[andLocation + 1: len(coordinates)]
+        x = xHalf[xHalf.find("=") + 1:len(xHalf)]
+        y = yHalf[yHalf.find("=") + 1:len(yHalf)]
 
         print("Recieved Coordinates x:", x, " y:", y)
-        #----------------------------------------------------------------------
-
-        self._set_response()
 
 
+        #-------------updates own board----------------------------------------
+        own_board = []
+        b.own_board(own_board)
 
-def run(server = s.HTTPServer, handler_class = myHandler):
+        int_x = int(x)
+        int_y = int(y)
+
+        if own_board[int_x][int_y] == "C": #or "B" # or "R" or "S" or "D":
+            self._set_response(200, 'hit')
+            own_board[int_x][int_y] = 'X'
+
+        elif own_board[int_x][int_y] == "_":
+            self._set_response(300, 'miss')
+            own_board[int_x][int_y] = 'M'
+        else:
+            self._set_response(300, 'nothing')
+
+        b.print_board(own_board)
+        # ----------------------------------------------------------------------
+
+        #self._set_response('hit')
+
+
+
+def run(server=s.HTTPServer, handler_class=myHandler):
     ip = (sys.argv[1])
     port = int(sys.argv[2])
-    #infile = open(sys.argv[3])
+    # infile = open(sys.argv[3])
 
     server_address = (ip, port)
     httpd = server(server_address, handler_class)
     print("server is running...")
     httpd.serve_forever()
+
 
 run()
 
@@ -61,7 +84,6 @@ run()
         pass
     httpd.server_close()
 '''
-
 
 '''
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #tcp socket

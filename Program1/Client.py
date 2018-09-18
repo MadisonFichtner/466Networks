@@ -10,6 +10,8 @@ port = int(sys.argv[2]) #port address
 x = (sys.argv[3])    #x coordinate shot at
 y = (sys.argv[4])    #y coordinate shot at
 
+# update opp_board
+
 # initialize and print own board
 #own_board = []
 #print("my board")
@@ -45,6 +47,7 @@ file.close()
 #-------------------------------------------------------------------------------
 
 def main():
+
     client = http.client.HTTPConnection(ip, port)
 
     coord = urllib.parse.urlencode({'x': x, 'y': y})
@@ -56,8 +59,14 @@ def main():
     print("test print ", param, "coord", coord, headers)
     client.request('POST', param, coord)
 
+    # b.read_board("own_board.txt", 1, 1)
+
     response = client.getresponse()
     print ("status : ", response.status, " reason: ", response.reason)
+
+
+
+
 
 
 main()
