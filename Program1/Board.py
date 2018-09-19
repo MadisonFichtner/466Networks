@@ -36,9 +36,9 @@ def print_board(self):
     for row in self:
         print(" ".join(row))
 
-def update_board(board, x, y, update):
+def update_board(board, x, y, update, shipType):
     if update == '1': # hit
-        board[x][y] = 'X' # the letter of ship
+        board[x][y] = shipType # the letter of ship
     elif update == '2': # miss
         board[x][y] = 'M'
 
