@@ -37,9 +37,9 @@ def print_board(self):
         print(" ".join(row))
 
 def update_board(board, x, y, update):
-    if update == '1': # hit
+    if update == 1: # hit
         board[x][y] = 'X' # the letter of ship
-    elif update == '2': # miss
+    elif update == 2: # miss
         board[x][y] = 'M'
 
 def read_board(board, i, j):        #not being used

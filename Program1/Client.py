@@ -46,6 +46,7 @@ def main():
     with open(file_name) as textFile:
         opp_board = [line.split() for line in textFile]
     b.update_board(opp_board, int_x, int_y, update)
+    print("Opponent's updated board:")
     b.print_board(opp_board)
     b.write_board(opp_board, file_name)
 
