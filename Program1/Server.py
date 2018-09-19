@@ -43,21 +43,24 @@ class myHandler(handler):
 
         int_x = int(x)
         int_y = int(y)
-        update = 0
-        print(own_board[int_x][int_y])
-        if own_board[int_x][int_y] == "C" or own_board[int_x][int_y] == "B" or own_board[int_x][int_y] == "R" or own_board[int_x][int_y] == "S" or own_board[int_x][int_y] == "D": #or "B" # or "R" or "S" or "D":
-            self._set_response(200, 'hit')
-            update = 1
+        update = '0'
+        if own_board[int_x][int_y] == "C" or \
+                        own_board[int_x][int_y] == "B" or \
+                        own_board[int_x][int_y] == "R" or \
+                        own_board[int_x][int_y] == "S" or \
+                        own_board[int_x][int_y] == "D": #or "B" # or "R" or "S" or "D":
+            self._set_response(200, (own_board[int_x][int_y] + '/hit= 1'))
+            update = '1'
         elif own_board[int_x][int_y] == "_": #miss
-            self._set_response(300, 'miss')
-            update = 2
-        elif own_board[int_x][int_y] == "X":
+            self._set_response(300, 'hit= 0')
+            update = '2'
+        elif own_board[int_x][int_y] == "X" or \
+                        own_board[int_x][int_y] == "M":
             self._set_response(300, 'already hit')
-            update = 1
         else:
             self._set_response(300, 'nothing')
-        print(update)
-        b.update_board(own_board, int_x, int_y, update)
+
+        b.update_board(own_board, int_x, int_y, update, 'X')
         b.print_board(own_board)
         b.write_board(own_board, file_name)
         # ---------------------------------------------------------------------
