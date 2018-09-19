@@ -7,7 +7,9 @@ import Board as b
 
 server = s.HTTPServer
 handler = s.BaseHTTPRequestHandler
-
+ip = (sys.argv[1])
+port = int(sys.argv[2])
+file_name = (sys.argv[3])
 
 class myHandler(handler):
     # all of this is copy and pasted from https://gist.github.com/mdonkers/63e115cc0c79b4f6b8b3a6b797e485c7
@@ -34,115 +36,36 @@ class myHandler(handler):
 
 
         #-------------updates own board----------------------------------------
-        own_board = []
-        b.own_board(own_board)
+        #own_board = []
+        #b.own_board(own_board)
+        with open(file_name) as textFile:
+            own_board = [line.split() for line in textFile]
 
         int_x = int(x)
         int_y = int(y)
-
-        if own_board[int_x][int_y] == "C": #or "B" # or "R" or "S" or "D":
+        update = 0
+        if own_board[int_x][int_y] == "C" or own_board[int_x][int_y] == "B" or own_board[int_x][int_y] == "R" or own_board[int_x][int_y] == "S" or own_board[int_x][int_y] == "D": #or "B" # or "R" or "S" or "D":
             self._set_response(200, 'hit')
-            own_board[int_x][int_y] = 'X'
-
-        elif own_board[int_x][int_y] == "_":
+            update = 1
+        elif own_board[int_x][int_y] == "_": #miss
             self._set_response(300, 'miss')
-            own_board[int_x][int_y] = 'M'
+            update = 2
+        elif own_board[int_x][int_y] == "X":
+            self._set_response(300, 'already hit')
         else:
             self._set_response(300, 'nothing')
 
+        b.update_board(own_board, int_x, int_y, update)
         b.print_board(own_board)
-        # ----------------------------------------------------------------------
-
-        #self._set_response('hit')
+        b.write_board(own_board, file_name)
+        # ---------------------------------------------------------------------
 
 
 
 def run(server=s.HTTPServer, handler_class=myHandler):
-    ip = (sys.argv[1])
-    port = int(sys.argv[2])
-    # infile = open(sys.argv[3])
-
     server_address = (ip, port)
     httpd = server(server_address, handler_class)
     print("server is running...")
     httpd.serve_forever()
 
-
 run()
-
-'''
-    data, addr = httpd.recv(1024)
-    data1, addr = httpd.recv(1024)
-    print("Received message: " + data.decode('utf-8') +"'")
-    httpd.close()
-'''
-
-'''
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    httpd.server_close()
-'''
-
-'''
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #tcp socket
-
-s.bind(('127.0.0.1', 1024))
-s.listen(1)
-# client stuff happens
-# conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # new socket??
-
-#c.addr = s.accept()
-(c, address) = s.accept()
-data = c.recv(1024)
-c.send(data) # echo
-
-msg = data.decode("ascii")
-print ("SERVER RECEIVED: " +msg)
-c.close()
-
-'''
-
-'''
-import socket
-import sys
-import argparse
-
-
-#parser = argparse.ArgumentParser(description='Server details.')
-#parser.add_argument()
-
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.bind(('127.0.0.1', 5000))
-
-data, addr = s.recvfrom(64)
-print("Received message: " + data.decode('utf-8') +"'")
-
-
-def check_message():
-    # inbounds?
-    # have coordinates been used
-    # is it formatted correctly
-    return 0
-
-def check_board():
-    # hit/ miss
-    # sink
-    return 0
-
-# result message
-
-    # HTTPResponse
-    # ex: hit=1\&sink=D
-        # HTTP ok with:
-            # hit =
-                # 1 --> hit
-                # 0 --> miss
-            # sink = letter code (if applicable)
-                # ex: (C, B, R, S, D)
-        # if out of bounds:
-            # HTTP Not Found
-        # if coordinates have already been attempted
-            # HTTP Bad Request
-'''

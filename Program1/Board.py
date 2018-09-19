@@ -1,10 +1,11 @@
 import array
 import sys
 
-def create_empty_board(self):
+def create_empty_board(self):   #not being used
     for x in range(10):
         self.append(["_"] * 10)
     return self
+
 
 def own_board(own):
     create_empty_board(own)
@@ -31,31 +32,17 @@ def own_board(own):
 
     own[5][0] = 'D'
 
-
-
 def print_board(self):
     for row in self:
         print(" ".join(row))
 
-
 def update_board(board, x, y, update):
-    file = open("own_board.txt","r")
-    f1 = file.readlines()
-    #for x in f1:
-        #print(x)
-    #self[x][y] = "X"
-    #return self
-    if update == 1: # hit
-        board[x][y] = 'C' # the letter of ship
-    elif update == 2: # miss
+    if update == '1': # hit
+        board[x][y] = 'X' # the letter of ship
+    elif update == '2': # miss
         board[x][y] = 'M'
-    elif update == 3: # sink
-        board[x][y] = 'S'
-    else:
-        print("UPDATE: something is wrong")
-    
 
-def read_board(board, i, j):
+def read_board(board, i, j):        #not being used
     print("IN READ BOARD")
     with open(board) as textFile:
         lines = [line.split() for line in textFile]
@@ -71,3 +58,13 @@ def read_board(board, i, j):
     file.close()
     # return var
 
+def write_board(board, file_name):
+    file = open(file_name, "w")
+    length = len(board)
+    for i in range(length):
+        for j in range(length):
+            var = board[i][j]
+            file.write(var)
+            file.write(" ")
+        file.write("\n")
+    file.close()
