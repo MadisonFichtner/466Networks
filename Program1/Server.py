@@ -12,12 +12,42 @@ port = int(sys.argv[2])
 file_name = (sys.argv[3])
 
 class myHandler(handler):
+    c_ship = int(5)
+    b_ship = int(4)
+    r_ship = int(3)
+    s_ship = int(3)
+    d_ship = int(2)
+    print(c_ship)
     # all of this is copy and pasted from https://gist.github.com/mdonkers/63e115cc0c79b4f6b8b3a6b797e485c7
     def _set_response(self,n , message):
         num = int(n)
         self.send_response(num, message)
         self.send_header('', '')
         self.end_headers()
+
+    @classmethod
+    def is_sunk(self, ship):
+        if ship == 'C':
+            self.c_ship -= 1
+            print(self.c_ship)
+            if self.c_ship == 0:
+                return 1
+        elif ship == 'B':
+            self.b_ship -= 1
+            if self.b_ship == 0:
+                return 1
+        elif ship == 'R':
+            self.r_ship -= 1
+            if self.r_ship == 0:
+                return 1
+        elif ship == 'S':
+            self.s_ship -= 1
+            if self.s_ship == 0:
+                return 1
+        elif ship == 'D':
+            self.d_ship -= 1
+            if self.d_ship == 0:
+                return 1
 
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
@@ -49,18 +79,21 @@ class myHandler(handler):
                         own_board[int_x][int_y] == "R" or \
                         own_board[int_x][int_y] == "S" or \
                         own_board[int_x][int_y] == "D": #or "B" # or "R" or "S" or "D":
-            self._set_response(200, (own_board[int_x][int_y] + '/hit= 1'))
-            update = '1'
-        elif own_board[int_x][int_y] == "_": #miss
+            if self.is_sunk(own_board[int_x][int_y]) == 1:
+                self._set_response(200, (own_board[int_x][int_y] + '/hit= 1/&sunk=' + own_board[int_x][int_y]))
+                update ='1'
+            else:
+                self._set_response(200, (own_board[int_x][int_y] + '/hit= 1'))
+                update ='1'
+        elif own_board[int_x][int_y] == "_" or own_board[int_x][int_y] == "M": #miss
             self._set_response(300, 'hit= 0')
             update = '2'
-        elif own_board[int_x][int_y] == "X" or \
-                        own_board[int_x][int_y] == "M":
-            self._set_response(300, 'already hit')
+        elif own_board[int_x][int_y] == "X":
+            self._set_response(300, 'Gone')
         else:
-            self._set_response(300, 'nothing')
+            self._set_response(300, 'Not Found')
 
-        b.update_board(own_board, int_x, int_y, update, 'X')
+        b.update_board(own_board, int_x, int_y, update, own_board[int_x][int_y])
         b.print_board(own_board)
         b.write_board(own_board, file_name)
         # ---------------------------------------------------------------------
