@@ -5,6 +5,9 @@ import urllib as url
 import urllib
 import Board as b
 
+#For player 2's server playing against player 1, Run as:
+#python server.py 127.0.0.1 1024 own_board_2.txt
+
 server = s.HTTPServer
 handler = s.BaseHTTPRequestHandler
 ip = (sys.argv[1])

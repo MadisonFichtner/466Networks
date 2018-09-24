@@ -6,6 +6,10 @@ import http.client
 import urllib.parse
 import urllib as u
 
+#for player 1's client against player 2, run as:
+#python client.py 127.0.0.1 1024 x y own_board_1.txt opp_board_1.txt
+
+
 ip = (sys.argv[1])  # ip address
 port = int(sys.argv[2])  # port address
 x = (sys.argv[3])  # x coordinate shot at
