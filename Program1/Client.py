@@ -7,13 +7,17 @@ import urllib.parse
 #python client.py 127.0.0.1 1024 x y own_board_1.txt opp_board_1.txt
 
 
+#for player 1's client against player 2, run as:
+#python client.py 127.0.0.1 1024 x y own_board_1.txt opp_board_1.txt
+
+
 ip = (sys.argv[1])  # ip address
 port = int(sys.argv[2])  # port address
 x = (sys.argv[3])  # x coordinate shot at
 y = (sys.argv[4])  # y coordinate shot at
+
 file_name = (sys.argv[5]) # opp_board
 own_file_name = (sys.argv[6]) # own_board
-
 
 def main():
     int_x = int(x)
@@ -58,6 +62,7 @@ def main():
     elif response.reason == "hit= 0":
         # if repose is a miss update board with M
         update = '2'
+        
     # check if ship has sunk
     elif response.reason == "C/hit= 1/&sunk=C" or response.reason == "B/hit= 1/&sunk=B" or \
                     response.reason == "R/hit= 1/&sunk=R" or response.reason == "S/hit= 1/&sunk=S" or \
@@ -69,6 +74,7 @@ def main():
             slashLocation = response.reason.find("/")
             sunken = response.reason[andLocation:]
             ship = response.reason[0:slashLocation]
+            
             # print sunk message
             print("You sunk your opponents: ", ship, " ship!")
             print(" ___   _   _   _  _   _  __")
@@ -81,6 +87,7 @@ def main():
     with open(own_file_name) as textFile:
         own_board = [line.split() for line in textFile]
     b.update_board(opp_board, int_x, int_y, update, ship)
+    
     # print updated opponent and own boards
     print("\nOpponents updated board:")
     b.print_board(opp_board)

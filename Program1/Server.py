@@ -25,8 +25,6 @@ class myHandler(handler):
     d_ship = int(2)
     print(c_ship)
 
-    # takes in response number and message and
-    # returns HTTP response to client
     def _set_response(self, n, message):
         num = int(n)
         self.send_response(num, message)
@@ -98,6 +96,7 @@ class myHandler(handler):
             else:
                 self._set_response(200, (own_board[int_x][int_y] + '/hit= 1'))
                 update ='1'
+                
         # if location on board is empty send hit = 0 (or miss)
         elif own_board[int_x][int_y] == "_" or own_board[int_x][int_y] == "M": #miss
             self._set_response(300, 'hit= 0')
