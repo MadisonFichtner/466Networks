@@ -8,6 +8,7 @@ import Board as b
 #For player 2's server playing against player 1, Run as:
 #python server.py 127.0.0.1 1024 own_board_2.txt
 
+
 server = s.HTTPServer
 handler = s.BaseHTTPRequestHandler
 ip = (sys.argv[1])
@@ -96,7 +97,7 @@ class myHandler(handler):
         else:
             self._set_response(300, 'Not Found')
 
-        b.update_board(own_board, int_x, int_y, update, own_board[int_x][int_y])
+        b.update_board(own_board, int_x, int_y, update, "X")
         b.print_board(own_board)
         b.write_board(own_board, file_name)
         # ---------------------------------------------------------------------
