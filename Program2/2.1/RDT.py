@@ -91,10 +91,39 @@ class RDT:
 
 
     def rdt_2_1_send(self, msg_S):
-        pass
+        send_p = Packet(self.seq_num, msg_S)                                    #copied from rdt_1_0_send
+        self.seq_num += 1                                                       #keep track of what sequence is active / haven't received ack for
+        while True:                                 #while the current_sequence is the last sent packet sequence
+            self.network.udt_send(p.get_byte_S())
+            response_packet = ''
+            while response_packet = '':                                         #while the client hasn't received a response, listen to receive
+                response_packet = self.network.udt_receive()
+
+            #save length of response_packet
+            #set buffer to packet
+            #check if packet is corrupt, if it is you must resend packet
+            #if the packet isn't corrupt
+            #save response from packet buffer
+            #if response's seq_num is less than self.seq_num, set answer = the resposne packet seq_num, and a '1' for acknoloedgement
+            #if ack sent, increment self.seq_num
+            #else, continue
 
     def rdt_2_1_receive(self):
-        pass
+        ret_S = None                                                            #copied from rdt_1_0_recieve
+        byte_S = self.network.udt_receive()                                     #copied from rdt_1_0_recieve
+        self.byte_buffer += byte_S                                              #copied from rdt_1_0_recieve
+        current_sequence = self.seq_num
+        while current_sequence == self.seq_num:
+            #check length of packet to make sure it consists of the right length of bytes
+            #Save the length of the packet
+            #check if packet is corrupt
+            #if corrupt, send NAK by setting answer = the packet's seq_num and '0' for NAK
+            #if not corrupt, create a packet from buffer econtent and add it to return answer
+            #check if packet is neither ACK or NAK, if received packet seq_num is less than self.seq_num then resend ACK. if received seq_num is == self.seq_num then send ACK and increment seq_num
+            #set ret_S to received packets msg_S if the ret_S is null, otherwise increment it by received rep_msg_S
+            #clear buffer
+            #return ret_S
+
 
     def rdt_3_0_send(self, msg_S):
         pass
