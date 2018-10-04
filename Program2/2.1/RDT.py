@@ -115,7 +115,7 @@ class RDT:
                     self.seq_num += 1                                           #increment the seq_num to move onto the next message/packet to be sent
                     break                                                       #break from loop. note: this is the single case the program can break from the "while True" loop
                 elif responding_packet.msg_S == "0":                            #if the recieved packets message is a 0, that means it was not acknowledged as valid
-                    self.byte_buffer = ''                                       #reset the buffer to receive a new version of ack / nak after sending the packet a second time 
+                    self.byte_buffer = ''                                       #reset the buffer to receive a new version of ack / nak after sending the packet a second time
                     continue
 
     def rdt_2_1_receive(self):
