@@ -93,7 +93,10 @@ class RDT:
 
     def rdt_2_1_send(self, msg_S):
         send_p = Packet(self.seq_num, msg_S)                                    #copied from rdt_1_0_send
-        while True:                                                             #until we break
+        attempt = 0
+        while True:                                                             #until we break due to packet being successfully sent and a ACK being recieved
+            attempt += 1
+            print("sending attempt: ", attempt)
             self.network.udt_send(send_p.get_byte_S())                          #send the current packet until a ack response is received
             recieved_p = ''                                                     #create a recieved packet
 
@@ -106,6 +109,7 @@ class RDT:
 
             if Packet.corrupt(recieved_p[:response_length]):                    #check if packet is corrupt, if it is, reset buffer as there isn't a valid packet in it
                 self.byte_buffer = ''
+                print("recieved packet corrupted on attempt: ", attempt, ". resending")
             else:
                 responding_packet = Packet.from_byte_S(recieved_p[:response_length])    #if packet isn't corrupt, create a new responding packet made of the recieved packet's bytes and length
                 if responding_packet.seq_num < self.seq_num:                    #if the received packets sequence number is lower than selfs, then it's behind and send an acknowledgement
@@ -125,6 +129,7 @@ class RDT:
         current_sequence = self.seq_num                                         #set the current sequence number to keep track of whether the server or client is behind on ack / nak and sending
         while current_sequence == self.seq_num:
             if len(self.byte_buffer) < Packet.length_S_length:                  # if the length of the packet reseived (added to buffer) is less than correct length, break
+                print("packet loss detected on recieved packet. continue waiting")
                 break
 
             recieved_length = int(self.byte_buffer[:Packet.length_S_length])    #save length of received packet for later use
@@ -135,6 +140,7 @@ class RDT:
             if Packet.corrupt(self.byte_buffer):                                #check if packet is corrupt. If it is, send nak back
                 nak_packet = Packet(self.seq_num, '0')                          #use the current sequence number (since it hasn't been incremented, that means a packet hasn't been received) and 0 (nak)
                 self.network.udt_send(nak_packet.get_byte_S())
+                print("recieved packet corrupted. sending NAK")
             else:                                                               #if packet isn't corrupt, send ack based on what the seq number of the received packet is
                 responding_packet = Packet.from_byte_S(self.byte_buffer[:recieved_length])      #create a "responding packet" that contains the packets bytes
                 if responding_packet.seq_num < self.seq_num:                    #if the responding packet has a sequence number less than the self's sequence number, it's a duplicate and send an ack
