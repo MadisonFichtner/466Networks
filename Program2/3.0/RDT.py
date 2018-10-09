@@ -2,6 +2,7 @@ import Network
 import argparse
 from time import sleep
 import hashlib
+import time
 
 
 class Packet:
@@ -51,7 +52,6 @@ class Packet:
         #and check if the same
         return checksum_S != computed_checksum_S
 
-
 class RDT:
     ## latest sequence number used in a packet
     seq_num = 1
@@ -92,7 +92,14 @@ class RDT:
 
 
     def rdt_2_1_send(self, msg_S):
+        pass
+
+    def rdt_2_1_receive(self):
+        pass
+
+    def rdt_3_0_send(self, msg_S):                                              #rdt2.1 implementation that accounts for loss
         send_p = Packet(self.seq_num, msg_S)                                    #copied from rdt_1_0_send
+        timeout = 5
         attempt = 0
         while True:                                                             #until we break due to packet being successfully sent and a ACK being recieved
             attempt += 1
@@ -100,8 +107,14 @@ class RDT:
             self.network.udt_send(send_p.get_byte_S())                          #send the current packet until a ack response is received
             recieved_p = ''                                                     #create a recieved packet
 
-            while recieved_p == '':                                             #while the client hasn't received a response, listen to receive
+            timeout_begin = time.time()
+            timeout_end = time.time()
+            while recieved_p == '' and timeout_end - timeout_begin < timeout:   #while the client hasn't received a response, listen to receive
                 recieved_p = self.network.udt_receive()
+                timeout_end = time.time()
+            if recieved_p == '':
+                print("TIMED OUT AFTER ", timeout, " SECONDS")
+                continue
 
             response_length = int(recieved_p[:Packet.length_S_length])          #save the length of the packet stored in the packet's length_S_length value
 
@@ -122,7 +135,7 @@ class RDT:
                     self.byte_buffer = ''                                       #reset the buffer to receive a new version of ack / nak after sending the packet a second time
                     continue
 
-    def rdt_2_1_receive(self):
+    def rdt_3_0_receive(self):                                                  #rdt2.1 implementation that accounts for loss
         ret_S = None                                                            #copied from rdt_1_0_recieve
         byte_S = self.network.udt_receive()                                     #copied from rdt_1_0_recieve
         self.byte_buffer += byte_S                                              #copied from rdt_1_0_recieve
@@ -142,14 +155,18 @@ class RDT:
                 print("RECEIVED PACKET CORRUPTED. SENDING NAK")
             else:                                                               #if packet isn't corrupt, send ack based on what the seq number of the received packet is
                 responding_packet = Packet.from_byte_S(self.byte_buffer[:recieved_length])      #create a "responding packet" that contains the packets bytes
-                if responding_packet.msg_S != '1' and responding_packet.msg_S != '0':
-                    if responding_packet.seq_num < self.seq_num:                    #if the responding packet has a sequence number less than the self's sequence number, it's a duplicate and send an ack
-                        ack_packet = Packet(responding_packet.seq_num, '1')
-                        self.network.udt_send(ack_packet.get_byte_S())
-                    elif responding_packet.seq_num == self.seq_num:                 #if the responding packet sequence number is equal to self's sequence number, it's the correct packet, send an ack
-                        ack_packet = Packet(responding_packet.seq_num, '1')
-                        self.network.udt_send(ack_packet.get_byte_S())
-                        self.seq_num += 1
+
+                if responding_packet.msg_S == '0' or responding_packet.msg_S == '1':
+                    self.byte_buffer = self.byte_buffer[recieved_length:]
+                    continue
+
+                if responding_packet.seq_num < self.seq_num:                    #if the responding packet has a sequence number less than the self's sequence number, it's a duplicate and send an ack
+                    ack_packet = Packet(responding_packet.seq_num, '1')
+                    self.network.udt_send(ack_packet.get_byte_S())
+                elif responding_packet.seq_num == self.seq_num:                 #if the responding packet sequence number is equal to self's sequence number, it's the correct packet, send an ack
+                    ack_packet = Packet(responding_packet.seq_num, '1')
+                    self.network.udt_send(ack_packet.get_byte_S())
+                    self.seq_num += 1
 
                 if ret_S is None:                                               #If no packet has been received prior, set the return string to the packets message
                     ret_S = responding_packet.msg_S
@@ -157,13 +174,6 @@ class RDT:
                     ret_S += responding_packet.msg_S
             self.byte_buffer = self.byte_buffer[recieved_length:]               #reset the buffer for the next packet
         return ret_S
-
-    def rdt_3_0_send(self, msg_S):
-        pass
-
-    def rdt_3_0_receive(self):
-        pass
-
 
 if __name__ == '__main__':
     parser =  argparse.ArgumentParser(description='RDT implementation.')
