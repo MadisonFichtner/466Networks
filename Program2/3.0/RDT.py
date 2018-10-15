@@ -112,7 +112,7 @@ class RDT:
             while recieved_p == '' and timeout_end - timeout_begin < timeout:   #while the client hasn't received a response, listen to receive
                 recieved_p = self.network.udt_receive()
                 timeout_end = time.time()
-                print("Time elapsed waiting for packet: ", timeout_end - timeout_begin)
+                #print("Time elapsed waiting for packet: ", timeout_end - timeout_begin)
             if recieved_p == '':
                 print("TIMED OUT AFTER ", timeout, " SECONDS")
                 continue
@@ -128,14 +128,14 @@ class RDT:
                 if responding_packet.seq_num < self.seq_num:                    #if the received packets sequence number is lower than selfs, then it's behind and send an acknowledgement
                     ack_packet = Packet(responding_packet.seq_num, '1')
                     self.network.udt_send(ack_packet.get_byte_S())
-                    print("BEHIND SEQ_NUM, ACK SENT")
+                    print("BEHIND SEQ_NUM, ACK SENT, RESENDING PACKET")
                 elif responding_packet.msg_S == "1":                            #if the recieved packets message is a 1, that means it's acknowledged and receieved correctly
                     self.seq_num += 1                                           #increment the seq_num to move onto the next message/packet to be sent
-                    print("ACK RECEIVED")
+                    print("ACK RECEIVED, SENDING NEXT PACKET")
                     break                                                       #break from loop. note: this is the single case the program can break from the "while True" loop
                 elif responding_packet.msg_S == "0":                            #if the recieved packets message is a 0, that means it was not acknowledged as valid
                     self.byte_buffer = ''                                       #reset the buffer to receive a new version of ack / nak after sending the packet a second time
-                    print("NAK RECEIVED")
+                    print("NAK RECEIVED, RESENDING PACKET")
                     continue
 
     def rdt_3_0_receive(self):                                                  #rdt2.1 implementation that accounts for loss
@@ -164,12 +164,12 @@ class RDT:
                 if responding_packet.seq_num < self.seq_num:                    #if the responding packet has a sequence number less than the self's sequence number, it's a duplicate and send an ack
                     ack_packet = Packet(responding_packet.seq_num, '1')
                     self.network.udt_send(ack_packet.get_byte_S())
-                    print("SENT ACK PACKET")
+                    print("RECEIVED VALID PACKET, SENT ACK PACKET")
                 elif responding_packet.seq_num == self.seq_num:                 #if the responding packet sequence number is equal to self's sequence number, it's the correct packet, send an ack
                     ack_packet = Packet(responding_packet.seq_num, '1')
                     self.network.udt_send(ack_packet.get_byte_S())
                     self.seq_num += 1
-                    print("SENT ACK PACKET")
+                    print("RECEIVED VALID PACKET, SENT ACK PACKET")
                 if ret_S is None:                                               #If no packet has been received prior, set the return string to the packets message
                     ret_S = responding_packet.msg_S
                 else:                                                           #If it isn't the first packet to be received, increment the return string with the most recent packets message
