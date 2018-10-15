@@ -112,12 +112,12 @@ class RDT:
             while recieved_p == '' and timeout_end - timeout_begin < timeout:   #while the client hasn't received a response, listen to receive
                 recieved_p = self.network.udt_receive()
                 timeout_end = time.time()
+                print("Time elapsed waiting for packet: ", timeout_end - timeout_begin)
             if recieved_p == '':
                 print("TIMED OUT AFTER ", timeout, " SECONDS")
                 continue
 
             response_length = int(recieved_p[:Packet.length_S_length])          #save the length of the packet stored in the packet's length_S_length value
-
             self.byte_buffer = recieved_p[response_length:]                     #put the packet in the buffer
 
             if Packet.corrupt(recieved_p[:response_length]):                    #check if packet is corrupt, if it is, reset buffer as there isn't a valid packet in it
@@ -128,11 +128,14 @@ class RDT:
                 if responding_packet.seq_num < self.seq_num:                    #if the received packets sequence number is lower than selfs, then it's behind and send an acknowledgement
                     ack_packet = Packet(responding_packet.seq_num, '1')
                     self.network.udt_send(ack_packet.get_byte_S())
+                    print("BEHIND SEQ_NUM, ACK SENT")
                 elif responding_packet.msg_S == "1":                            #if the recieved packets message is a 1, that means it's acknowledged and receieved correctly
                     self.seq_num += 1                                           #increment the seq_num to move onto the next message/packet to be sent
+                    print("ACK RECEIVED")
                     break                                                       #break from loop. note: this is the single case the program can break from the "while True" loop
                 elif responding_packet.msg_S == "0":                            #if the recieved packets message is a 0, that means it was not acknowledged as valid
                     self.byte_buffer = ''                                       #reset the buffer to receive a new version of ack / nak after sending the packet a second time
+                    print("NAK RECEIVED")
                     continue
 
     def rdt_3_0_receive(self):                                                  #rdt2.1 implementation that accounts for loss
@@ -152,22 +155,21 @@ class RDT:
             if Packet.corrupt(self.byte_buffer):                                #check if packet is corrupt. If it is, send nak back
                 nak_packet = Packet(self.seq_num, '0')                          #use the current sequence number (since it hasn't been incremented, that means a packet hasn't been received) and 0 (nak)
                 self.network.udt_send(nak_packet.get_byte_S())
-                print("RECEIVED PACKET CORRUPTED. SENDING NAK")
+                print("RECEIVED PACKET CORRUPTED. NAK SENT")
             else:                                                               #if packet isn't corrupt, send ack based on what the seq number of the received packet is
                 responding_packet = Packet.from_byte_S(self.byte_buffer[:recieved_length])      #create a "responding packet" that contains the packets bytes
-
-                if responding_packet.msg_S == '0' or responding_packet.msg_S == '1':
+                if responding_packet.msg_S == '0' or responding_packet.msg_S == '1':    #checking if the received packet message is a ack or nak, set buffer if true
                     self.byte_buffer = self.byte_buffer[recieved_length:]
                     continue
-
                 if responding_packet.seq_num < self.seq_num:                    #if the responding packet has a sequence number less than the self's sequence number, it's a duplicate and send an ack
                     ack_packet = Packet(responding_packet.seq_num, '1')
                     self.network.udt_send(ack_packet.get_byte_S())
+                    print("SENT ACK PACKET")
                 elif responding_packet.seq_num == self.seq_num:                 #if the responding packet sequence number is equal to self's sequence number, it's the correct packet, send an ack
                     ack_packet = Packet(responding_packet.seq_num, '1')
                     self.network.udt_send(ack_packet.get_byte_S())
                     self.seq_num += 1
-
+                    print("SENT ACK PACKET")
                 if ret_S is None:                                               #If no packet has been received prior, set the return string to the packets message
                     ret_S = responding_packet.msg_S
                 else:                                                           #If it isn't the first packet to be received, increment the return string with the most recent packets message
