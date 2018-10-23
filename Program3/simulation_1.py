@@ -2,34 +2,34 @@
 Created on Oct 12, 2016
 @author: mwittie
 '''
-import network
-import link
+import network_1
+import link_1
 import threading
 from time import sleep
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
+simulation_time = 5 #give the network sufficient time to transfer all packets before quitting
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
 
     #create network nodes
-    client = network.Host(1)
+    client = network_1.Host(1)
     object_L.append(client)
-    server = network.Host(2)
+    server = network_1.Host(2)
     object_L.append(server)
-    router_a = network.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
+    router_a = network_1.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
     object_L.append(router_a)
 
     #create a Link Layer to keep track of links between network nodes
-    link_layer = link.LinkLayer()
+    link_layer = link_1.LinkLayer()
     object_L.append(link_layer)
 
     #add all the links
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
-    link_layer.add_link(link.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link.Link(router_a, 0, server, 0, 50))
+    link_layer.add_link(link_1.Link(client, 0, router_a, 0, 50))
+    link_layer.add_link(link_1.Link(router_a, 0, server, 0, 50))
 
 
     #start all the objects
@@ -45,14 +45,8 @@ if __name__ == '__main__':
 
 
     #create some send events
-    for i in range(3):
-        data_S = "Sample data that is wayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy too long"
-        if len(data_S) > 50:
-            data_1_S = data_S[0:50] + "%d"
-            data_2_S = data_S[50:] + "%d"
-
-        client.udt_send(2, data_1_S % i)
-        client.udt_send(2, data_2_S % i)
+    data_S = "Sample data that is wayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy too long"
+    client.udt_send(2, data_S)
 
 
     #give the network sufficient time to transfer all packets before quitting
