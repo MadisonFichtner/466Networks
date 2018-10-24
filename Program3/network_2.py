@@ -79,6 +79,7 @@ class Host:
         self.in_intf_L = [Interface()]
         self.out_intf_L = [Interface()]
         self.stop = False #for thread termination
+        self.packet_id = 10
 
     ## called when printing the object
     def __str__(self):
@@ -89,25 +90,50 @@ class Host:
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S):
         if len(data_S) > self.out_intf_L[0].mtu:                                #packet is bigger than max transmission size
-            length = self.out_intf_L[0].mtu - 8                                #the addresses length is 11, so subtract that from mtu
-            packet_id = 10                                                  #arbitrary id that will increment when full packet is sent over the two smaller packets, of length 5 as defined in NetworkPacket
-            packet_1 = NetworkPacket(dst_addr, 0, packet_id, data_S[0:length])                #split packet into two packets
-            packet_2 = NetworkPacket(dst_addr, 0, packet_id, data_S[length:])
-            self.out_intf_L[0].put(packet_1.to_byte_S())
-            print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet_1, self.out_intf_L[0].mtu))
-            self.out_intf_L[0].put(packet_2.to_byte_S())
-            print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet_2, self.out_intf_L[0].mtu))
-            packet_id += 10
+            length = self.out_intf_L[0].mtu - 8                                #the addresses length is 8, so subtract that from mtu
+            if len(data_S) % self.out_intf_L[0].mtu != 0:
+                num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
+            packets=[]
+            for i in range(num_packets):
+                if(i == num_packets-1):
+                    packet = NetworkPacket(dst_addr, 2, self.packet_id, data_S[:length])
+                    self.out_intf_L[0].put(packet.to_byte_S())
+                    print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
+                    data_S = data_S[length:]
+                else:
+                    packet = NetworkPacket(dst_addr, 1, self.packet_id, data_S[:length])
+                    self.out_intf_L[0].put(packet.to_byte_S())
+                    print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
+                    data_S = data_S[length:]
+            self.packet_id += 10
         else:
-            p = NetworkPacket(dst_addr, data_S)
+            p = NetworkPacket(dst_addr, 0, self.packet_id, data_S)
             self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
             print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
 
+    def reconstruct(self, segments, id):
+        original_data = ''
+        for seg in segments:
+            if seg[6:8] == id:
+                original_data += seg[8:]
+        return original_data
 
+    reconstructed_packet = ''
+    segments = []
     ## receive packet from the network layer                                    #TODO, will probably need another method for reconstructing packets as well
-    def udt_receive(self):                                                      #need to check if packet is a segment, and then reconstruct
+    def udt_receive(self):                                         #need to check if packet is a segment, and then reconstruct
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
+            print(pkt_S[5])
+            current_packet_id = pkt_S[6:8]
+            if pkt_S[5] == '1':               #check if packet is segment of a larger packet, if it is, add it to array
+                self.segments.append(pkt_S)
+            elif pkt_S[5] == '2':
+                self.segments.append(pkt_S)
+                original_data = self.reconstruct(self.segments, current_packet_id)
+                original_packet = NetworkPacket(pkt_S[:5], 0, current_packet_id, original_data)
+                print('%s: successfully reconstructed packet "%s" on the in interface' % (self, original_packet))
+                #print(current_packet_id)
             print('%s: received packet "%s" on the in interface' % (self, pkt_S))
 
 

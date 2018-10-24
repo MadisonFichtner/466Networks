@@ -45,8 +45,10 @@ if __name__ == '__main__':
 
 
     #create some send events
-    data_S = "Sample data that is wayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy too long"
+    data_S = "Sample data that is wayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy too long"
+    #data_S2 = "Sample data that is wayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy too long"
     client.udt_send(2, data_S)
+    #client.udt_send(2, data_S2)
 
 
     #give the network sufficient time to transfer all packets before quitting
