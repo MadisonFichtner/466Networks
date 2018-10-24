@@ -34,19 +34,19 @@ class Interface:
 class NetworkPacket:
     ## packet encoding lengths
     #address length is the first 5 numbers
-    dst_addr_S_length = 5
+    dst_addr_S_length = 5   #allow for addresses up to 5 digits in length
     #the flag indicating whether the packet is segmented is the 6th number (pkt_S[5])
-    seg_flag_S_length = 1
+    seg_flag_S_length = 1   #flag length is one
     #the flag indicating the offset, or the packet ID is 2 numbers long, found at pkt_S[6:7]
-    offset_S_length = 2
+    offset_S_length = 2     #offset length is 2 (basically the packet id)
 
     ##@param dst_addr: address of the destination host
     # @param data_S: packet payload
     def __init__(self, dst_addr, seg_flag, offset, data_S):
         self.dst_addr = dst_addr
         self.data_S = data_S
-        self.seg_flag = seg_flag
-        self.offset = offset
+        self.seg_flag = seg_flag        #flag = 0 -> not a segment, flag = 1 -> a segment, flag = 2 -> last segment required to reconstruct
+        self.offset = offset            #packet_id
 
     ## called when printing the object
     def __str__(self):
@@ -63,7 +63,7 @@ class NetworkPacket:
     ## extract a packet object from a byte string
     # @param byte_S: byte string representation of the packet
     @classmethod
-    def from_byte_S(self, byte_S):
+    def from_byte_S(self, byte_S):                                              #Create header string for addr, offset, flag, data
         dst_addr = int(byte_S[0 : NetworkPacket.dst_addr_S_length])
         seg_flag = int(byte_S[NetworkPacket.dst_addr_S_length : NetworkPacket.dst_addr_S_length + NetworkPacket.seg_flag_S_length])
         offset = int(byte_S[NetworkPacket.dst_addr_S_length + NetworkPacket.seg_flag_S_length : NetworkPacket.dst_addr_S_length + NetworkPacket.seg_flag_S_length + NetworkPacket.offset_S_length])
@@ -79,7 +79,7 @@ class Host:
         self.in_intf_L = [Interface()]
         self.out_intf_L = [Interface()]
         self.stop = False #for thread termination
-        self.packet_id = 10
+        self.packet_id = 10 #first packet id is 10 by default. Increments by 10
 
     ## called when printing the object
     def __str__(self):
@@ -91,51 +91,53 @@ class Host:
     def udt_send(self, dst_addr, data_S):
         if len(data_S) > self.out_intf_L[0].mtu:                                #packet is bigger than max transmission size
             length = self.out_intf_L[0].mtu - 8                                #the addresses length is 8, so subtract that from mtu
-            if len(data_S) % self.out_intf_L[0].mtu != 0:
+            if len(data_S) % self.out_intf_L[0].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
                 num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
-            packets=[]
+            packets=[]  #create empty packet array to store the broken down packets
             for i in range(num_packets):
-                if(i == num_packets-1):
+                if(i == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
                     packet = NetworkPacket(dst_addr, 2, self.packet_id, data_S[:length])
                     self.out_intf_L[0].put(packet.to_byte_S())
                     print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
                     data_S = data_S[length:]
-                else:
+                else:   #otherwise, send with a '1' flag to indicate it is a segment
                     packet = NetworkPacket(dst_addr, 1, self.packet_id, data_S[:length])
                     self.out_intf_L[0].put(packet.to_byte_S())
                     print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
                     data_S = data_S[length:]
             self.packet_id += 10
+            if self.packet_id >= 100:      #reset the packet_id if it breaks 100 since the size is only 2 digits
+                self.packet_id = 10
         else:
             p = NetworkPacket(dst_addr, 0, self.packet_id, data_S)
             self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
             print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
 
+    #method for reconstructing the packets at the end of the transmission of a group of packets
     def reconstruct(self, segments, id):
         original_data = ''
         for seg in segments:
-            if seg[6:8] == id:
+            if seg[6:8] == id: #check packet_id to make sure they match befoire putting them together
                 original_data += seg[8:]
         return original_data
 
     reconstructed_packet = ''
     segments = []
-    ## receive packet from the network layer                                    #TODO, will probably need another method for reconstructing packets as well
-    def udt_receive(self):                                         #need to check if packet is a segment, and then reconstruct
+    ## receive packet from the network layer                                    #will probably need another method for reconstructing packets as well
+    def udt_receive(self):                                                      #need to check if packet is a segment, and then reconstruct
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
+            print('%s: received packet "%s" on the in interface' % (self, pkt_S))
             print(pkt_S[5])
             current_packet_id = pkt_S[6:8]
-            if pkt_S[5] == '1':               #check if packet is segment of a larger packet, if it is, add it to array
+            if pkt_S[5] == '1':                                                 #check if packet is segment of a larger packet, if it is, add it to array
                 self.segments.append(pkt_S)
-            elif pkt_S[5] == '2':
+            elif pkt_S[5] == '2':                                               #check if received packet is the last packet being received of the same packet_id
                 self.segments.append(pkt_S)
-                original_data = self.reconstruct(self.segments, current_packet_id)
-                original_packet = NetworkPacket(pkt_S[:5], 0, current_packet_id, original_data)
+                original_data = self.reconstruct(self.segments, current_packet_id)  #construct the original message
+                original_packet = NetworkPacket(pkt_S[:5], 0, current_packet_id, original_data) #construct the origin packet with the message
                 print('%s: successfully reconstructed packet "%s" on the in interface' % (self, original_packet))
                 #print(current_packet_id)
-            print('%s: received packet "%s" on the in interface' % (self, pkt_S))
-
 
     ## thread target for the host to keep receiving data
     def run(self):
