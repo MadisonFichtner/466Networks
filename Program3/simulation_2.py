@@ -29,7 +29,7 @@ if __name__ == '__main__':
     #add all the links
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
     link_layer.add_link(link_2.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link_2.Link(router_a, 0, server, 0, 50))
+    link_layer.add_link(link_2.Link(router_a, 0, server, 0, 30))
 
 
     #start all the objects
@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
 
     #create some send events
-    data_S = "Sample data that is wayyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy too long"
-    data_S2 = "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way."
+    data_S = "This packet is probably a bit too "
+    data_S2 = "long but I'm going to send it anyway"
     client.udt_send(2, data_S)
     client.udt_send(2, data_S2)
 
