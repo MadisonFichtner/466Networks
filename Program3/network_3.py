@@ -182,6 +182,12 @@ class Router:
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
                     #segmenting to account for 30mtu between router and server. Copied code from udt_send
+                    '''Dictionary Shit HERE'''
+                     # HERE you will need to implement a lookup into the
+                    # forwarding table to find the appropriate outgoing interface
+                    # for now we assume the outgoing interface is also i
+
+
                     data_S = pkt_S[8:]
                     dst_addr = pkt_S[4]
                     packet_id = pkt_S[6:8]
