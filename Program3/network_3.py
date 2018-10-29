@@ -97,6 +97,7 @@ class Host:
             for i in range(num_packets):
                 if(i == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
                     packet = NetworkPacket(dst_addr, 2, self.packet_id, data_S[:length])
+                    print(dst_addr)
                     self.out_intf_L[0].put(packet.to_byte_S())
                     print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
                     data_S = data_S[length:]
@@ -128,7 +129,6 @@ class Host:
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
             print('%s: received packet "%s" on the in interface' % (self, pkt_S))
-            print(pkt_S[5])
             current_packet_id = pkt_S[6:8]
             if pkt_S[5] == '1':                                                 #check if packet is segment of a larger packet, if it is, add it to array
                 self.segments.append(pkt_S)
@@ -173,16 +173,33 @@ class Router:
     # appropriate outgoing interfaces
     def forward(self):                                                          #TODO implement the forwarding decision making down below where indicated. Right now it only forwards the first half of packet
         for i in range(len(self.in_intf_L)):                                    #TODO the segmentation. We need to split the two packets into segments here
-            pkt_S = None                                                        #TODO need to check that the packet isn't over the max length (mtu), and if it is we need to segment further
+            pkt_S = None
             try:
                 #get packet from interface i
                 pkt_S = self.in_intf_L[i].get()
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
-                    # HERE you will need to implement a lookup into the
-                    # forwarding table to find the appropriate outgoing interface
-                    # for now we assume the outgoing interface is also i
+                    #segmenting to account for 30mtu between router and server. Copied code from udt_send
+                    data_S = pkt_S[8:]
+                    dst_addr = pkt_S[4]
+                    packet_id = pkt_S[6:8]
+                    if len(pkt_S) > self.out_intf_L[i].mtu:
+                        length = self.out_intf_L[0].mtu - 8                                #the addresses length is 8, so subtract that from mtu
+                        if len(data_S) % self.out_intf_L[0].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
+                            num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
+                        packets=[]  #create empty packet array to store the broken down packets
+                        for j in range(num_packets):
+                            if(j == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
+                                packet = NetworkPacket(dst_addr, 2, packet_id, data_S[:length])
+                                self.out_intf_L[0].put(packet.to_byte_S())
+                                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
+                                data_S = data_S[length:]
+                            else:   #otherwise, send with a '1' flag to indicate it is a segment
+                                packet = NetworkPacket(dst_addr, 1, packet_id, data_S[:length])
+                                self.out_intf_L[0].put(packet.to_byte_S())
+                                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
+                                data_S = data_S[length:]
                     self.out_intf_L[i].put(p.to_byte_S(), True)
                     print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
                         % (self, p, i, i, self.out_intf_L[i].mtu))

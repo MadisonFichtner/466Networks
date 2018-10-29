@@ -20,9 +20,9 @@ if __name__ == '__main__':
     object_L.append(host1)
     host2 = network_3.Host(2)
     object_L.append(host2)
-    host3 = network_3.Host(2)
+    host3 = network_3.Host(3)
     object_L.append(host3)
-    host4 = network_3.Host(2)
+    host4 = network_3.Host(4)
     object_L.append(host4)
     #-------------------------
     #Create network routers A-D
@@ -71,13 +71,12 @@ if __name__ == '__main__':
     for t in thread_L:
         t.start()
 
-
     #create some send events
-    data_S = "I will build a great, great wall on our southern border, and I will have Mexico pay for that wall. Mark my words. -Campaign launch rally, 15/6/15"
+    data_S = "I will build a great, great wall on our"
     data_S2 = "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way."
 
     host1.udt_send(3, data_S)
-    #host2.udt_send(4, data_S2)
+    host2.udt_send(4, data_S)
 
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
