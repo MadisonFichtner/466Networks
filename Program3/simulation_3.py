@@ -16,13 +16,13 @@ if __name__ == '__main__':
 
     #------------------------
     #Create route dictionary of interfaces for routers
-    to_host3 {
+    to_host3 = {
         1:0,
         'A':0,
         'B':0,
         'D':0
     }
-    to_host4 {
+    to_host4 = {
         2:1,
         'A':1,
         'C':1,
