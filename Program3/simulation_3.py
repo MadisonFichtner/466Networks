@@ -9,10 +9,29 @@ from time import sleep
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 5 #give the network sufficient time to transfer all packets before quitting
+simulation_time = 8 #give the network sufficient time to transfer all packets before quitting
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
+
+    #------------------------
+    #Create route dictionary of interfaces for routers
+    to_host3 {
+        1:0,
+        'A':0,
+        'B':0,
+        'D':0
+    }
+    to_host4 {
+        2:1,
+        'A':1,
+        'C':1,
+        'D':1
+    }
+    route_dict = {
+        3:to_host3,
+        4:to_host4
+    }
 
     #-------------------------
     #create network hosts 1-4
@@ -20,19 +39,19 @@ if __name__ == '__main__':
     object_L.append(host1)
     host2 = network_3.Host(2)
     object_L.append(host2)
-    host3 = network_3.Host(2)
+    host3 = network_3.Host(3)
     object_L.append(host3)
-    host4 = network_3.Host(2)
+    host4 = network_3.Host(4)
     object_L.append(host4)
     #-------------------------
     #Create network routers A-D
-    router_a = network_3.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
+    router_a = network_3.Router(name='A', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
     object_L.append(router_a)
-    router_b = network_3.Router(name='B', intf_count=1, max_queue_size=router_queue_size)
+    router_b = network_3.Router(name='B', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
     object_L.append(router_b)
-    router_c = network_3.Router(name='C', intf_count=1, max_queue_size=router_queue_size)
+    router_c = network_3.Router(name='C', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
     object_L.append(router_c)
-    router_d = network_3.Router(name='D', intf_count=1, max_queue_size=router_queue_size)
+    router_d = network_3.Router(name='D', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
     object_L.append(router_d)
     #-------------------------
     #create a Link Layer to keep track of links between network nodes
@@ -48,11 +67,10 @@ if __name__ == '__main__':
     link_layer.add_link(link_3.Link(router_d, 0, host3, 0, 50))
 
     #Linklayer for Host2
-    '''Do we need new interfaces per link layer?'''
-    link_layer.add_link(link_3.Link(host2, 0, router_a, 0, 50))
-    link_layer.add_link(link_3.Link(router_a, 0, router_c, 0, 50))
-    link_layer.add_link(link_3.Link(router_c, 0, router_d, 0, 50))
-    link_layer.add_link(link_3.Link(router_d, 0, host4, 0, 50))
+    link_layer.add_link(link_3.Link(host2, 1, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(router_a, 1, router_c, 1, 50))
+    link_layer.add_link(link_3.Link(router_c, 1, router_d, 1, 50))
+    link_layer.add_link(link_3.Link(router_d, 1, host4, 1, 50))
 
     #start all the objects
     thread_L = []
