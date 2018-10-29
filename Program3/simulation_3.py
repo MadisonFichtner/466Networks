@@ -90,7 +90,7 @@ if __name__ == '__main__':
         t.start()
 
     #create some send events
-    data_S = "I will build a great, great wall on our"
+    data_S = "I will build a great, great wall on our Southern Border."
     data_S2 = "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way."
 
     host1.udt_send(3, data_S)
