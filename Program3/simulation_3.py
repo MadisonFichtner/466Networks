@@ -15,7 +15,7 @@ if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
 
     #------------------------
-    #Create route dictionary of interfaces for routers
+    #Create router table of interfaces
     to_host3 = {
         1:0,
         'A':0,
@@ -67,10 +67,10 @@ if __name__ == '__main__':
     link_layer.add_link(link_3.Link(router_d, 0, host3, 0, 50))
 
     #Linklayer for Host2
-    link_layer.add_link(link_3.Link(host2, 1, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(host2, 0, router_a, 1, 50))
     link_layer.add_link(link_3.Link(router_a, 1, router_c, 1, 50))
     link_layer.add_link(link_3.Link(router_c, 1, router_d, 1, 50))
-    link_layer.add_link(link_3.Link(router_d, 1, host4, 1, 50))
+    link_layer.add_link(link_3.Link(router_d, 1, host4, 0, 50))
 
     #start all the objects
     thread_L = []
