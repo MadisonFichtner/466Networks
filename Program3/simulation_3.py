@@ -16,11 +16,6 @@ if __name__ == '__main__':
 
     #------------------------
     #Create router table of interfaces
-    routing_table_A = {'B', 'C'}
-    routing_table_B = {'D'}
-    routing_table_C = {'D'}
-    routing_table_D = {'3', '4'}
-
     to_host3 = {
         'A':0,
         'B':0,
