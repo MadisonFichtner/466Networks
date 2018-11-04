@@ -16,6 +16,10 @@ if __name__ == '__main__':
 
     #------------------------
     #Create router table of interfaces
+    routing_table_A = {'B', 'C'}
+    routing_table_B = {'D'}
+    routing_table_C = {'D'}
+    routing_table_D = {'3', '4'}
     to_host3 = {
         1:0,
         'A':0,
@@ -45,13 +49,13 @@ if __name__ == '__main__':
     object_L.append(host4)
     #-------------------------
     #Create network routers A-D
-    router_a = network_3.Router(name='A', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
+    router_a = network_3.Router(name='A', intf_count=2, max_queue_size=router_queue_size, dict=routing_table_A)
     object_L.append(router_a)
-    router_b = network_3.Router(name='B', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
+    router_b = network_3.Router(name='B', intf_count=1, max_queue_size=router_queue_size, dict=routing_table_B)
     object_L.append(router_b)
-    router_c = network_3.Router(name='C', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
+    router_c = network_3.Router(name='C', intf_count=1, max_queue_size=router_queue_size, dict=routing_table_C)
     object_L.append(router_c)
-    router_d = network_3.Router(name='D', intf_count=2, max_queue_size=router_queue_size, dict=route_dict)
+    router_d = network_3.Router(name='D', intf_count=2, max_queue_size=router_queue_size, dict=routing_table_D)
     object_L.append(router_d)
     #-------------------------
     #create a Link Layer to keep track of links between network nodes
@@ -62,15 +66,15 @@ if __name__ == '__main__':
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
     #Linklayer for Host1
     link_layer.add_link(link_3.Link(host1, 0, router_a, 0, 50))
-    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 50))
-    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 50))
-    link_layer.add_link(link_3.Link(router_d, 0, host3, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 30))
+    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 30))
+    link_layer.add_link(link_3.Link(router_d, 0, host3, 0, 30))
 
     #Linklayer for Host2
     link_layer.add_link(link_3.Link(host2, 0, router_a, 1, 50))
-    link_layer.add_link(link_3.Link(router_a, 1, router_c, 1, 50))
-    link_layer.add_link(link_3.Link(router_c, 1, router_d, 1, 50))
-    link_layer.add_link(link_3.Link(router_d, 1, host4, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, 30))
+    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, 30))
+    link_layer.add_link(link_3.Link(router_d, 1, host4, 0, 30))
 
     #start all the objects
     thread_L = []
@@ -94,7 +98,7 @@ if __name__ == '__main__':
     data_S2 = "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way."
 
     host1.udt_send(3, data_S)
-    #host2.udt_send(4, data_S)
+    host2.udt_send(4, data_S2)
 
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
