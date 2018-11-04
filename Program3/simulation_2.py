@@ -45,10 +45,10 @@ if __name__ == '__main__':
 
 
     #create some send events
-    data_S = "This packet is probably a bit too "
-    data_S2 = "long but I'm going to send it anyway"
+    data_S = "This packet is probably a too long but I'm going to send it anyway"
+    #data_S2 = "long but I'm going to send it anyway"
     client.udt_send(2, data_S)
-    client.udt_send(2, data_S2)
+    #client.udt_send(2, data_S2)
 
 
     #give the network sufficient time to transfer all packets before quitting

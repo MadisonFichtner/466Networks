@@ -187,7 +187,7 @@ class Router:
                     if len(pkt_S) > self.out_intf_L[i].mtu:
                         length = self.out_intf_L[0].mtu - 8                                #the addresses length is 8, so subtract that from mtu
                         if len(data_S) % self.out_intf_L[0].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
-                            num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
+                            num_packets = int(len(data_S) / length) + 1
                         packets=[]  #create empty packet array to store the broken down packets
                         for j in range(num_packets):
                             if(j == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
