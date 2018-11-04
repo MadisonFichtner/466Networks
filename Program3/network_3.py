@@ -143,7 +143,9 @@ class Host:
                 self.segments.append(pkt_S)
                 original_data = self.reconstruct(self.segments, current_packet_id)  #construct the original message
                 original_packet = NetworkPacket(pkt_S[0:5], pkt_S[5:10], 0, current_packet_id, original_data) #construct the origin packet with the message
+                print('#---------------------------------------------------------------------')
                 print('%s: successfully reconstructed packet "%s" on the in interface' % (self, original_packet))
+                print('#---------------------------------------------------------------------')
                 #print(current_packet_id)
 
     ## thread target for the host to keep receiving data

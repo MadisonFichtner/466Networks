@@ -91,17 +91,19 @@ if __name__ == '__main__':
 
     for t in thread_L:
         t.start()
+    print('#---------------------------------------------------------------------')
 
     #create some send events
     data_S = "I will build a great, great wall on our Southern Border."
     data_S2 = "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way."
 
     host1.udt_send(3, data_S)
-    #sleep(simulation_time)
+    print('#---------------------------------------------------------------------')
     host2.udt_send(4, data_S2)
-
+    print('#---------------------------------------------------------------------')
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
+
 
     #join all threads
     for o in object_L:
