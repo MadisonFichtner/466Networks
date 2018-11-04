@@ -97,8 +97,10 @@ class Host:
     def udt_send(self, dst_addr, data_S):
         if len(data_S) > self.out_intf_L[0].mtu:                                #packet is bigger than max transmission size
             length = self.out_intf_L[0].mtu - 13                                #the addresses length is 13, so subtract that from mtu
+            #print(len(data_S))
             if len(data_S) % self.out_intf_L[0].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
-                num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
+                num_packets = int(len(data_S) / length) + 1
+            #print(num_packets)
             packets=[]  #create empty packet array to store the broken down packets
             for i in range(num_packets):
                 if(i == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
@@ -126,7 +128,9 @@ class Host:
             if seg[11:13] == id: #check packet_id to make sure they match before putting them together
                 original_data += seg[13:]
         return original_data
-
+#I will build a great, great wall on our Southern Border. 2 packets host1-routerA link
+#I will build a great, great wall our Southern borde
+#
     ## receive packet from the network layer                                    #will probably need another method for reconstructing packets as well
     def udt_receive(self):                                                      #need to check if packet is a segment, and then reconstruct
         pkt_S = self.in_intf_L[0].get()
@@ -193,20 +197,20 @@ class Router:
                     data_S = pkt_S[13:]
                     packet_id = pkt_S[11:13]
                     if len(pkt_S) > self.out_intf_L[i].mtu:
-                        length = self.out_intf_L[0].mtu - 13                                #the addresses length is 8, so subtract that from mtu
-                        if len(data_S) % self.out_intf_L[0].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
-                            num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
+                        length = self.out_intf_L[i].mtu - 13                                #the addresses length is 8, so subtract that from mtu
+                        if len(data_S) % self.out_intf_L[i].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
+                            num_packets = int(len(data_S) / length) + 1
                         packets=[]  #create empty packet array to store the broken down packets
                         for j in range(num_packets):
                             if(j == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
                                 packet = NetworkPacket(source_addr, interface, 2, packet_id, data_S[:length])
                                 self.out_intf_L[int(interface)].put(packet.to_byte_S())
-                                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
+                                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[i].mtu))
                                 data_S = data_S[length:]
                             else:   #otherwise, send with a '1' flag to indicate it is a segment
                                 packet = NetworkPacket(source_addr, interface, 1, packet_id, data_S[:length])
                                 self.out_intf_L[int(interface)].put(packet.to_byte_S())
-                                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
+                                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[i].mtu))
                                 data_S = data_S[length:]
 
                     self.out_intf_L[i].put(p.to_byte_S(), True)

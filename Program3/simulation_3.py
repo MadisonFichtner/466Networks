@@ -98,7 +98,7 @@ if __name__ == '__main__':
     data_S2 = "Sometimes I'll start a sentence and I don't even know where it's going. I just hope I find it along the way."
 
     host1.udt_send(3, data_S)
-    sleep(simulation_time)
+    #sleep(simulation_time)
     host2.udt_send(4, data_S2)
 
     #give the network sufficient time to transfer all packets before quitting
