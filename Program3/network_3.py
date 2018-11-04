@@ -101,7 +101,6 @@ class Host:
             for i in range(num_packets):
                 if(i == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
                     packet = NetworkPacket(self.addr, dst_addr, 2, self.packet_id, data_S[:length])
-                    print(dst_addr)
                     self.out_intf_L[0].put(packet.to_byte_S())
                     print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
                     data_S = data_S[length:]
@@ -186,32 +185,29 @@ class Router:
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
                     #segmenting to account for 30mtu between router and server. Copied code from udt_send
-                    '''Dictionary Shit HERE'''
-                     # HERE you will need to implement a lookup into the
-                    # forwarding table to find the appropriate outgoing interface
-                    # for now we assume the outgoing interface is also i
 
+                    #ROUTING
+                    source_addr = pkt_S[4]          #source address
+                    interface = self.route(source_addr)     #find correct route with the route method
 
-                    data_S = pkt_S[8:]
-                    dst_addr = pkt_S[4]
-                    packet_id = pkt_S[6:8]
+                    data_S = pkt_S[13:]
+                    packet_id = pkt_S[11:13]
                     if len(pkt_S) > self.out_intf_L[i].mtu:
-                        length = self.out_intf_L[0].mtu - 8                                #the addresses length is 8, so subtract that from mtu
+                        length = self.out_intf_L[0].mtu - 13                                #the addresses length is 8, so subtract that from mtu
                         if len(data_S) % self.out_intf_L[0].mtu != 0:   #if the length of the message doesn't evenly divide by the max transmission size, round up a packet
                             num_packets = int(len(data_S) / self.out_intf_L[0].mtu) + 1
                         packets=[]  #create empty packet array to store the broken down packets
                         for j in range(num_packets):
                             if(j == num_packets-1):     #if last packet is being sent after being broken down, change flag to '2' to indicate this
-                                packet = NetworkPacket(dst_addr, 2, packet_id, data_S[:length])
-                                self.out_intf_L[0].put(packet.to_byte_S())
+                                packet = NetworkPacket(source_addr, interface, 2, packet_id, data_S[:length])
+                                self.out_intf_L[int(interface)].put(packet.to_byte_S())
                                 print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
                                 data_S = data_S[length:]
                             else:   #otherwise, send with a '1' flag to indicate it is a segment
-                                packet = NetworkPacket(dst_addr, 1, packet_id, data_S[:length])
-                                self.out_intf_L[0].put(packet.to_byte_S())
+                                packet = NetworkPacket(source_addr, interface, 1, packet_id, data_S[:length])
+                                self.out_intf_L[int(interface)].put(packet.to_byte_S())
                                 print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, packet, self.out_intf_L[0].mtu))
                                 data_S = data_S[length:]
-
 
                     self.out_intf_L[i].put(p.to_byte_S(), True)
                     print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
@@ -219,6 +215,22 @@ class Router:
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass
+
+    def route(self, source_addr):   #route function to find which route to take to get to the correct host
+        if(len(self.in_intf_L) == 1):   #if the length of interfaces is 0, default to the 0 output interface
+            return 0
+        else:
+            interface = 0   #set initial interface to 0
+            for route in self.dict:
+                if self.name == 'A':
+                    if source_addr == '1' and route == 'B':     #route to B
+                        return 0
+                    elif source_addr == '2' and route == 'C':    #route to C
+                        return 1
+                elif route == source_addr:  #if the route is the source address, you must be on the correct interface
+                    return interface
+                interface += 1  #Increment interface until you are on the correct one
+
 
     ## thread target for the host to keep forwarding data
     def run(self):
