@@ -84,6 +84,8 @@ class Host:
         self.out_intf_L = [Interface()]
         self.stop = False #for thread termination
         self.packet_id = 10 #first packet id is 10 by default. Increments by 10
+        self.segments = []
+        self.reconstructed_packet = ''
 
     ## called when printing the object
     def __str__(self):
@@ -125,8 +127,6 @@ class Host:
                 original_data += seg[13:]
         return original_data
 
-    reconstructed_packet = ''
-    segments = []
     ## receive packet from the network layer                                    #will probably need another method for reconstructing packets as well
     def udt_receive(self):                                                      #need to check if packet is a segment, and then reconstruct
         pkt_S = self.in_intf_L[0].get()
