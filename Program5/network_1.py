@@ -77,6 +77,27 @@ class NetworkPacket:
         return self(dst, data_S)
 
 
+class MPLSFrame:
+    label_length = 20 #defined in MPLSFrame protocol
+
+    def __init__(self, data_S, label):
+        self.data_S = data_S
+        self.label = label
+
+    def __str__(self):
+        return self.to_byte_S()
+
+    def to_byte_S(self):
+        byte_S = self.label.zfill(self.label_length)
+        byte_S += self.data_S
+        return byte_S
+
+    @classmethod
+    def from_byte_S(self, byte_S):
+        label = byte_S[0: self.label_length].strip('0')
+        data_s = byte_S[self.label_length:]
+        return self(data_S, label)
+
 ## Implements a network host for receiving and transmitting data
 class Host:
 
