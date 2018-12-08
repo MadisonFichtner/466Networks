@@ -1,5 +1,5 @@
-from network_2 import Router, Host
-from link_2 import Link, LinkLayer
+from network_3 import Router, Host
+from link_3 import Link, LinkLayer
 import threading
 from time import sleep
 import sys
@@ -7,7 +7,7 @@ from copy import deepcopy
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 10 #give the network sufficient time to execute transfers
+simulation_time = 15 #give the network sufficient time to execute transfers
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads at the end
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     frwd_tbl_D = {(0, '14'): (1, '14'), (2, '14'): (1, '14'), (1, '12'): (0, '12'), (1, '13'): (2, '13')}
     decap_tbl_D = {'14': 1}
     router_d = Router(name='RD',
-                              intf_capacity_L=[500,500,500],
+                              intf_capacity_L=[500,50,500],
                               encap_tbl_D = encap_tbl_D,
                               frwd_tbl_D = frwd_tbl_D,
                               decap_tbl_D = decap_tbl_D,
@@ -89,10 +89,9 @@ if __name__ == '__main__':
         t.start()
 
     #create some send events
-    for i in range(1):
+    for i in range(2):
         priority = i%2
         host_1.udt_send('H3', 'MESSAGE_%d_FROM_H1' % i, priority)
-        sleep(1)
         host_2.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
 
     #give the network sufficient time to transfer all packets before quitting
