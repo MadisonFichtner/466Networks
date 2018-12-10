@@ -96,7 +96,7 @@ class Link:
                             else:
                                 priorities[1] += 1
                         time.sleep(.5)
-                        print("\nQUEUE LENGTHS: ----------------------------")
+                        print("\nQUEUE LENGTHS FOR ROUTER ----------------------------")
                         print("Priority 0 packets: ", priorities[0])
                         print("Priority 1 packets: ", priorities[1])
                         print("-------------------------------------------\n")

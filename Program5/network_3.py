@@ -185,21 +185,49 @@ class Router:
             fr_S = self.intf_L[i].get('in') #get frame from interface i
             if fr_S is None:
                 continue # no frame to process yet
+            priority = fr_S[1]
             #decapsulate the packet
             fr = LinkFrame.from_byte_S(fr_S)
-            pkt_S = fr.data_S
+            #pkt_S = fr.data_S
+            if priority == '0':
+                self.p0_queue.append(fr)
+            else:
+                self.p1_queue.append(fr)
+            if(len(self.p1_queue) > 0):
+                if self.p1_queue[0].type_S == "Network":
+                    pkt_S = self.p1_queue.pop(0).data_S
+                    p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
+                    self.process_network_packet(p, i)
+                elif self.p1_queue[0].type_S == "MPLS":
+                    pkt_S = self.p1_queue.pop(0).data_S
+                    m_fr = MPLSFrame.from_byte_S(pkt_S)
+                    self.process_MPLS_frame(m_fr, i)
+                else:
+                    raise('%s: unknown frame type: %s' % (self, fr.type))
+            else:
+                if self.p0_queue[0].type_S == "Network":
+                    pkt_S = self.p0_queue.pop(0).data_S
+                    p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
+                    self.process_network_packet(p, i)
+                elif self.p0_queue[0].type_S == "MPLS":
+                    pkt_S = self.p0_queue.pop(0).data_S
+                    m_fr = MPLSFrame.from_byte_S(pkt_S)
+                    self.process_MPLS_frame(m_fr, i)
+                else:
+                    raise('%s: unknown frame type: %s' % (self, fr.type))
+
             #process the packet as network, or MPLS
-            if fr.type_S == "Network":
-                p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
-                self.process_network_packet(p, i)
-            elif fr.type_S == "MPLS":
+            #if fr.type_S == "Network":
+            #    p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
+            #    self.process_network_packet(p, i)
+            #elif fr.type_S == "MPLS":
                 # TODO: handle MPLS frames
-                m_fr = MPLSFrame.from_byte_S(pkt_S) #parse a frame out
+            #    m_fr = MPLSFrame.from_byte_S(pkt_S) #parse a frame out
                 #for now, we just relabel the packet as an MPLS frame without encapsulation
                 #send the MPLS frame for processing
-                self.process_MPLS_frame(m_fr, i)
-            else:
-                raise('%s: unknown frame type: %s' % (self, fr.type))
+            #    self.process_MPLS_frame(m_fr, i)
+            #else:
+            #    raise('%s: unknown frame type: %s' % (self, fr.type))
 
     ## process a network packet incoming to this router
     #  @param p Packet to forward
@@ -218,21 +246,13 @@ class Router:
     #  @param m_fr: MPLS frame to process
     #  @param i Incoming interface number for the frame
     def process_MPLS_frame(self, m_fr, i):
-        packet = m_fr.data_S
-        if packet[0] == '0':
-            self.p0_queue.append(m_fr)
-        else:
-            self.p1_queue.append(m_fr)
-        #TODO: implement MPLS forward, or MPLS decapsulation if this is the last hop router for the path
         print('%s: processing MPLS frame "%s"' % (self, m_fr))
         decap_interface = self.decap_tbl_D.get(m_fr.label)
         if decap_interface is not None:
+            packet = m_fr.data_S
             out_interface = decap_interface
             try:
-                if(len(self.p1_queue) > 0):
-                    fr = LinkFrame('Network', self.p1_queue.pop(0).data_S)
-                else:
-                    fr = LinkFrame('Network', self.p0_queue.pop(0).data_S)
+                fr = LinkFrame('Network', m_fr.data_S)
                 self.intf_L[out_interface].put(fr.to_byte_S(), 'out', True)
                 print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
             except queue.Full:
@@ -243,11 +263,7 @@ class Router:
             if dictionary is not None:
                 out_interface = dictionary[0]
                 try:
-                    if(len(self.p1_queue) > 0):
-                        fr = LinkFrame('MPLS', self.p1_queue.pop(0).to_byte_S())
-                    else:
-                        fr = LinkFrame('MPLS', self.p0_queue.pop(0).to_byte_S())
-                    #fr = LinkFrame('MPLS', m_fr.to_byte_S())
+                    fr = LinkFrame('MPLS', m_fr.to_byte_S())
                     self.intf_L[out_interface].put(fr.to_byte_S(), 'out', True)
                     print('%s: forwarding MPLS frame "%s" from interface %d to %d' % (self, fr, i, 1))
                 except queue.Full:

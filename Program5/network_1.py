@@ -178,8 +178,11 @@ class Router:
         for i in range(len(self.intf_L)):
             fr_S = None #make sure we are starting the loop with a blank frame
             fr_S = self.intf_L[i].get('in') #get frame from interface i
+            size = (self.intf_L)
             if fr_S is None:
                 continue # no frame to process yet
+            print(size)
+            print(fr_S)
             #decapsulate the packet
             fr = LinkFrame.from_byte_S(fr_S)
             pkt_S = fr.data_S

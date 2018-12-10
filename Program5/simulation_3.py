@@ -58,7 +58,7 @@ if __name__ == '__main__':
     frwd_tbl_D = {(0, '14'): (1, '14'), (2, '14'): (1, '14'), (1, '12'): (0, '12'), (1, '13'): (2, '13')}
     decap_tbl_D = {'14': 1}
     router_d = Router(name='RD',
-                              intf_capacity_L=[500,50,500],
+                              intf_capacity_L=[500,500,100],
                               encap_tbl_D = encap_tbl_D,
                               frwd_tbl_D = frwd_tbl_D,
                               decap_tbl_D = decap_tbl_D,
@@ -89,7 +89,7 @@ if __name__ == '__main__':
         t.start()
 
     #create some send events
-    for i in range(2):
+    for i in range(4):
         priority = i%2
         host_1.udt_send('H3', 'MESSAGE_%d_FROM_H1' % i, priority)
         host_2.udt_send('H3', 'MESSAGE_%d_FROM_H2' % i, priority)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
 
-
+    sleep(5)
     #join all threads
     for o in object_L:
         o.stop = True
